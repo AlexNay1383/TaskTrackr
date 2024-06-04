@@ -1,1 +1,7 @@
 {% extends "base.html" %}
+
+{% block bdy %}
+<h1>{{user.username}}</h1>
+<h2>{{user.email}}</h2>
+<h6>{{user.phash}}</h6>
+{% endblock %}

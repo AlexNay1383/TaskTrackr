@@ -33,21 +33,32 @@ def login():
     else:
         return render_template("login.html")
 
-@app.route("/signin/", methods=["GET", "POST"])
-def signin():
+@app.route("/signup/", methods=["GET", "POST"])
+def signup():
     if request.method == "POST":
         email = request.form["email"]
         phash = sha256(request.form["password"].encode()).hexdigest()
 
         if email in users:
             flash("Email already taken")
-            return redirect(url_for("signin"))
+            return redirect(url_for("signup"))
         
-        newuser = User()
+        newuser = User(request.form["username"], email, phash)
+        
+        users[newuser.email] = newuser
+
+        session["email"] = email
+        session["phash"] = phash
+
+        return redirect(url_for("home"))
+    else:
+        return render_template("signup.html")
+
+
 @app.route("/home/")
 def home():
     if "email" and "phash" in session:
-        return render_template("home.html")
+        return render_template("home.html", user=users[session["email"]])
     else:
         return redirect(url_for("login"))
 
