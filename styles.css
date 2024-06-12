@@ -1,0 +1,72 @@
+/* styles.css */
+body {
+    font-family: Arial, sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background-color: #f4f4f4;
+    margin: 0;
+}
+
+.calendar {
+    background-color: white;
+    border: 1px solid #ccc;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    width: 300px;
+}
+
+.calendar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #333;
+    color: white;
+    padding: 10px;
+}
+
+.calendar-header button {
+    background-color: #444;
+    border: none;
+    color: white;
+    padding: 5px 10px;
+    cursor: pointer;
+}
+
+.calendar-body {
+    padding: 10px;
+}
+
+.day-names, .days {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+}
+
+.day-names div, .days div {
+    text-align: center;
+    padding: 1px;
+    height: 40px; /* Ensure consistent height */
+    line-height: 40px; /* Vertically center the text */
+    box-sizing: border-box;
+}
+
+.day-names div {
+    font-weight: bold;
+    background-color: #eee;
+    border: 1px solid #ddd; /* Match the border of the days for consistent look */
+}
+
+.days div {
+    border: 1px solid #ddd;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.days div:hover {
+    background-color: #eee;
+}
+
+.days .empty {
+    background-color: #f4f4f4;
+    cursor: default;
+}

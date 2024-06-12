@@ -1,19 +1,46 @@
 {% extends "base.html" %}
 
+{% block title %}<title>Sign up for TaskTrackr</title>{% endblock %}
+{% block style %}
+<link rel="stylesheet" href="{{url_for('static', filename='login.css')}}">
+{% endblock %}
+
 {% block bdy %}
 <body>
+    <div class="container">
+        <h2>Sign Up</h2>
 
-    <div>
-        <h1>Sign up</h1>
-        <form action="#" method="post">
-            <label>Username:</label><br>
-            <input type="text" name="username"><br>
-            <label>Email:</label><br>
-            <input type="text" name="email"><br>
-            <label>Password:</label><br>
-            <input type="password" name="password"><br>
-            <input type="submit" value="Submit"><br>
+        <div class="flash-message">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert {{ category }}">{{ message }}</div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+        </div>
+
+        <form action="/signup" method="POST">
+            <div class="input-group">
+                <label for="username">Username:</label>
+                <input type="text" id="username" name="username" required>
+            </div>
+            <div class="input-group">
+                <label for="email">Email:</label>
+                <input type="email" id="email" name="email" required>
+            </div>
+            <div class="input-group">
+                <label for="password">Password:</label>
+                <input type="password" id="password" name="password" required>
+            </div>
+            <div class="input-group">
+                <label for="confirm-password">Confirm Password:</label>
+                <input type="password" id="confirm-password" name="confirm-password" required>
+            </div>
+            <button type="submit">Sign Up</button>
         </form>
+        <p class="redir">Already have an account? <a href="/login">Login here</a></p>
     </div>
 </body>
+
 {% endblock %}
