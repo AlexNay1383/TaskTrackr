@@ -24,24 +24,24 @@ def is_valid_email(email):
         # Email is not valid, exception message contains details
         return False
 
-def is_strong_password(password: str) -> bool:
+def strenght_password(password: str) -> str:
     if len(password) < 7:
-        return False
+        return "Password too short"
     
     if not any(char.isupper() for char in password):
-        return False
+        return "Password must have uppercase letters"
     
     if not any(char.islower() for char in password):
-        return False
+        return "Password must have lowercase letters"
     
     if not any(char.isdigit() for char in password):
-        return False
+        return "Password must have digits"
     
-    special_chars = "@#$%^&+="
+    special_chars = "!@#$%^&*()-_=+\\|?<>"
     if not any(char in special_chars for char in password):
-        return False
+        return "Password must have a special character"
     
-    return True
+    return "Strong"
 
 
 @app.route("/login/", methods=["GET", "POST"])
@@ -85,9 +85,10 @@ def signup():
             flash("Passwords don't match")
             return redirect(url_for("signup"))
         
-        if not is_strong_password(request.form["password"]):
-            flash("Password is too weak")
-            return redirect(url_for())
+        strenght = strenght_password(request.form["password"])
+        if strenght != "Strong":
+            flash(strenght)
+            return redirect(url_for("signup"))
 
         newuser = User(request.form["username"], email, phash)
         
