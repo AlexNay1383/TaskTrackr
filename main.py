@@ -1,7 +1,7 @@
 from flask import Flask, redirect, url_for, session, render_template, request, flash
 from email_validator import validate_email, EmailNotValidError
 from hashlib import sha256
-from users import users, User
+from classes import users, User
 from datetime import timedelta
 
 app = Flask(__name__)
