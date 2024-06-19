@@ -1,8 +1,9 @@
 from flask import Flask, redirect, url_for, session, render_template, request, flash
-from email_validator import validate_email, EmailNotValidError
-from hashlib import sha256
-from classes import users, User
 from datetime import timedelta
+
+from login_funcs import *
+from hashlib import sha256
+from classes import User
 
 app = Flask(__name__)
 with open("keys/secret_key.txt") as k:
@@ -12,36 +13,6 @@ app.permanent_session_lifetime = timedelta(days=3)
 @app.route("/")
 def main_page():
     return redirect(url_for("login"))
-
-def is_valid_email(email):
-    try:
-        # Validate the email address
-        valid = validate_email(email)
-        # Update with the normalized form of the email
-        email = valid.email
-        return True
-    except EmailNotValidError as e:
-        # Email is not valid, exception message contains details
-        return False
-
-def strenght_password(password: str) -> str:
-    if len(password) < 7:
-        return "Password too short"
-    
-    if not any(char.isupper() for char in password):
-        return "Password must have uppercase letters"
-    
-    if not any(char.islower() for char in password):
-        return "Password must have lowercase letters"
-    
-    if not any(char.isdigit() for char in password):
-        return "Password must have digits"
-    
-    special_chars = "!@#$%^&*()-_=+\\|?<>"
-    if not any(char in special_chars for char in password):
-        return "Password must have a special character"
-    
-    return "Strong"
 
 
 @app.route("/login/", methods=["GET", "POST"])
@@ -91,8 +62,6 @@ def signup():
             return redirect(url_for("signup"))
 
         newuser = User(request.form["username"], email, phash)
-        
-        users[newuser.email] = newuser
 
         session["email"] = email
         session["phash"] = phash
