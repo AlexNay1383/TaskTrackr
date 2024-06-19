@@ -10,28 +10,42 @@ with open("keys/mongo.txt", "r") as f:
 maindb = client["MainDB"]
 backupdb = client["BackupDB"]
 
-class DBController:
-    def in_users(match):
-        pass
+def usr_to_dict(user: User) -> dict:
+    return {"userid": user.userid, "username": user.username, "email": user.email, "password_hash": user.phash}
 
-    def add_user(user: User):
-        docid = new_doc_id()
+def in_users(email):
+    result = maindb["Users"].find_one({}, {"User": {"email": email}})
+    if result is None:
+        return False
+    return True
+
+def add_user(user: User):
+    docid = new_doc_id()
+    if in_users(user.email):
+        return
+    
+    for db in [maindb, backupdb]:
+        users = db["Users"]
+        users.insert_one({"_id": docid ,"User": usr_to_dict(user)})
+
+def update_user(email, user: User):
+    if in_users(email):
         for db in [maindb, backupdb]:
             users = db["Users"]
-            users.insert_one({"_id": docid ,"User":{"userid": user.userid, "username": user.username, "email": user.email, "password_hash": user.phash}})
+            users.update_one({"User": {"email": email}}, {"$set": {"User": usr_to_dict(user)}})
 
-    def update_user(match):
-        pass
+def delete_user(email):
+    if in_users(email):
+        for db in [maindb, backupdb]:
+            users = db["Users"]
+            users.find_one_and_delete({}, {"User": {"email": email}})
 
-    def delete_user(match):
-        pass
 
+def in_tasks(id) -> dict[str]:
+    pass
 
-    def in_tasks(id) -> dict[str]:
-        pass
+def update_task(id):
+    pass
 
-    def update_task(id):
-        pass
-
-    def delete_task(id):
-        pass
+def delete_task(id):
+    pass
