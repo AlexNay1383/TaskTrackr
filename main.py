@@ -2,8 +2,9 @@ from flask import Flask, redirect, url_for, session, render_template, request, f
 from datetime import timedelta
 
 from login_funcs import *
-from hashlib import sha256
+from crypt_funcs import secure_hash
 from classes import User
+from mongodb import *
 
 app = Flask(__name__)
 with open("keys/secret_key.txt") as k:
@@ -19,13 +20,13 @@ def main_page():
 def login():
     if request.method == "POST":
         email = request.form["email"]
-        phash = sha256(request.form["password"].encode()).hexdigest()
+        phash = secure_hash(request.form["password"])
 
-        if email not in users:
+        if get_user({"email": email}) is None:
             flash("Wrong email or password")
             return redirect(url_for("login"))
 
-        if users[email].phash != phash:
+        if get_user({"email": email})["password_hash"] != phash:
             flash("Wrong email or password")
             return redirect(url_for("login"))
 
@@ -40,15 +41,14 @@ def login():
 def signup():
     if request.method == "POST":
         email = request.form["email"]
-
-        phash = sha256(request.form["password"].encode()).hexdigest()
-        phashc = sha256(request.form["confirm-password"].encode()).hexdigest()
+        phash = secure_hash(request.form["password"])
+        phashc = secure_hash(request.form["confirm-password"])
 
         if not is_valid_email(email):
             flash("Invalid email")
             return redirect(url_for('signup'))
 
-        if email in users:
+        if get_user({"email": "FUCK U"}) is not None:
             flash("Email already taken")
             return redirect(url_for("signup"))
         
@@ -63,6 +63,8 @@ def signup():
 
         newuser = User(request.form["username"], email, phash)
 
+        add_user(newuser)
+
         session["email"] = email
         session["phash"] = phash
 
@@ -74,9 +76,9 @@ def signup():
 @app.route("/home/")
 def home():
     if "email" and "phash" in session:
-        return render_template("home.html", user=users[session["email"]])
-    else:
-        return redirect(url_for("login"))
+        if get_user({"email": session["email"]}):
+            return render_template("home2.html")
+    return redirect(url_for("login"))
 
 @app.route("/logout/")
 def logout():

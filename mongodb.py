@@ -1,8 +1,5 @@
-import bson.codec_options
 from pymongo import MongoClient
 from classes import *
-import datetime
-import bson
 
 with open("keys/mongo.txt", "r") as f:
     mongousername = f.readline().removesuffix('\n')
@@ -18,8 +15,14 @@ def usr_to_dict(user: User) -> dict:
 
 def get_user(usr_match):
     users = maindb["Users"]
-    _id = users.find_one({}, {"User": usr_match})["_id"]
-    return users.find_one({"_id": _id})["User"]
+    res = users.find_one({}, {"User": usr_match})
+    if res is None:
+        return None
+    print(res)
+    _id = res["_id"]
+    if users.find_one({"_id": _id})["User"]["email"] == usr_match["email"]:
+        return users.find_one({"_id": _id})["User"]
+    return None
 
 def in_users(user: User):
     result = maindb["Users"].find_one({}, {"User": {"userid": user.userid}})
