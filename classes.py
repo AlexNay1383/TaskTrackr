@@ -18,5 +18,6 @@ class Task:
         self.start = start
         self.finish = finish
         self.parenttask = parenttask
+        self.subtasks = []
 
     

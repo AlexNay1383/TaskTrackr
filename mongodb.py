@@ -11,7 +11,7 @@ maindb = client["MainDB"]
 backupdb = client["BackupDB"]
 
 def usr_to_dict(user: User) -> dict:
-    return {"userid": user.userid, "username": user.username, "email": user.email, "password_hash": user.phash}
+    return {"userid": user.userid, "username": user.username, "email": user.email, "password_hash": user.phash, "tasks": user.tasks}
 
 def in_users(email):
     result = maindb["Users"].find_one({}, {"User": {"email": email}})
@@ -41,8 +41,33 @@ def delete_user(email):
             users.find_one_and_delete({}, {"User": {"email": email}})
 
 
-def in_tasks(id) -> dict[str]:
-    pass
+
+def task_to_dict(task: Task) -> dict:
+    return {
+        "taskid": task.taskid,
+        "title": task.title,
+        "description": task.descr,
+        "date": task.date,
+        "start": task.start,
+        "finish": task.finish,
+        "parenttask": task.parenttask,
+        "subtasks": task.subtasks
+        }
+
+def in_tasks(id):
+    result = maindb["Tasks"].find_one({}, {"Task": {"taskid": id}})
+    if result is None:
+        return False
+    return True
+
+def add_task(task: Task):
+    docid = new_doc_id()
+    if in_users(task.taskid):
+        return
+    
+    for db in [maindb, backupdb]:
+        users = db["Tasks"]
+        users.insert_one({"_id": docid ,"User": task_to_dict(task)})
 
 def update_task(id):
     pass
