@@ -1,5 +1,8 @@
+import bson.codec_options
 from pymongo import MongoClient
 from classes import *
+import datetime
+import bson
 
 with open("keys/mongo.txt", "r") as f:
     mongousername = f.readline().removesuffix('\n')
@@ -13,32 +16,43 @@ backupdb = client["BackupDB"]
 def usr_to_dict(user: User) -> dict:
     return {"userid": user.userid, "username": user.username, "email": user.email, "password_hash": user.phash, "tasks": user.tasks}
 
-def in_users(email):
-    result = maindb["Users"].find_one({}, {"User": {"email": email}})
+def get_user(usr_match):
+    users = maindb["Users"]
+    _id = users.find_one({}, {"User": usr_match})["_id"]
+    return users.find_one({"_id": _id})["User"]
+
+def in_users(user: User):
+    result = maindb["Users"].find_one({}, {"User": {"userid": user.userid}})
     if result is None:
         return False
     return True
 
 def add_user(user: User):
     docid = new_doc_id()
-    if in_users(user.email):
+    if in_users(user):
         return
-    
+    docids.append(docid)
     for db in [maindb, backupdb]:
         users = db["Users"]
         users.insert_one({"_id": docid ,"User": usr_to_dict(user)})
 
-def update_user(email, user: User):
-    if in_users(email):
+def update_user(user: User):
+    if in_users(user):
         for db in [maindb, backupdb]:
             users = db["Users"]
-            users.update_one({"User": {"email": email}}, {"$set": {"User": usr_to_dict(user)}})
+            _id = users.find_one({}, {"User": {"userid": user.userid}})["_id"]
+            users.update_one({"_id": _id}, {"$set": {"User": usr_to_dict(user)}})
 
-def delete_user(email):
-    if in_users(email):
+def delete_user(user: User):
+    if in_users(user):
+        _id = maindb["Users"].find_one({}, {"User": {"userid": user.userid}})["_id"]
+        try:
+            docids.remove(_id)
+        except:
+            print("Bad")
         for db in [maindb, backupdb]:
             users = db["Users"]
-            users.find_one_and_delete({}, {"User": {"email": email}})
+            users.find_one_and_delete({"_id": _id})
 
 
 
@@ -54,23 +68,42 @@ def task_to_dict(task: Task) -> dict:
         "subtasks": task.subtasks
         }
 
-def in_tasks(id):
-    result = maindb["Tasks"].find_one({}, {"Task": {"taskid": id}})
+
+def get_task(task_match):
+    tasks = maindb["Tasks"]
+    _id = tasks.find_one({}, {"Task": task_match})["_id"]
+    return tasks.find_one({"_id": _id})["Task"]
+
+def in_tasks(task: Task):
+    result = maindb["Tasks"].find_one({}, {"Task": {"taskid": task.taskid}})
     if result is None:
         return False
     return True
 
 def add_task(task: Task):
     docid = new_doc_id()
-    if in_users(task.taskid):
+    if in_tasks(task):
         return
-    
+    docids.append(docid)
     for db in [maindb, backupdb]:
         users = db["Tasks"]
-        users.insert_one({"_id": docid ,"User": task_to_dict(task)})
+        users.insert_one({"_id": docid ,"Task": task_to_dict(task)})
 
-def update_task(id):
-    pass
+def update_task(task: Task):
+    if in_tasks(task):
+        for db in [maindb, backupdb]:
+            tasks = db["Tasks"]
+            _id = tasks.find_one({}, {"Task": {"taskid": task.taskid}})["_id"]
+            tasks.update_one({"_id": _id}, {"$set": {"Task": task_to_dict(task)}})
 
-def delete_task(id):
-    pass
+
+def delete_task(task: Task):
+    if in_tasks(task):
+        _id = maindb["Tasks"].find_one({}, {"Task": {"taskid": task.taskid}})["_id"]
+        try:
+            docids.remove(_id)
+        except:
+            print("Bad")
+        for db in [maindb, backupdb]:
+            tasks = db["Tasks"]
+            tasks.find_one_and_delete({"_id": _id})
